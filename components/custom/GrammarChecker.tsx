@@ -24,7 +24,8 @@ export function GrammarChecker() {
   const [error, setError] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
-  const debounceTimer = useRef<NodeJS.Timeout>();
+  const debounceTimer = useRef<NodeJS.Timeout | null>(null);
+
 
   // Debounced grammar check function
   const checkGrammar = useCallback(async (inputText: string, selectedStyle: WritingStyleType) => {
