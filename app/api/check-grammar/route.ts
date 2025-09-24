@@ -7,48 +7,54 @@ import { GrammarCheckRequestSchema } from '@/types';
 import { z } from 'zod';
 
 export async function POST(request: NextRequest) {
-  try {
-    // Check authentication
-    const session = await getServerSession(authOptions);
-
-    if (!session?.user?.email) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
-    }
-
-    // Parse and validate request body
-    const body = await request.json();
-
     try {
-      const validatedData = GrammarCheckRequestSchema.parse(body);
+        // Check authentication
+        const session = await getServerSession(authOptions);
 
-      // Perform grammar check
-      const result = await checkGrammar(validatedData);
+        if (!session?.user?.email) {
+            return NextResponse.json(
+                { error: 'Unauthorized' },
+                { status: 401 }
+            );
+        }
 
-      // Update user's check count
-      await connectToDatabase();
-      await UserModel.findOneAndUpdate(
-        { email: session.user.email },
-        { $inc: { checksPerformed: 1 } }
-      );
+        // Parse and validate request body
+        const body = await request.json();
 
-      return NextResponse.json(result);
-    } catch (validationError) {
-      if (validationError instanceof z.ZodError) {
+        try {
+            const validatedData = GrammarCheckRequestSchema.parse(body);
+
+            // Perform grammar check
+            const result = await checkGrammar(validatedData);
+
+            // Update user's check count
+            await connectToDatabase();
+            await UserModel.findOneAndUpdate(
+                { email: session.user.email },
+                { $inc: { checksPerformed: 1 } }
+            );
+
+            return NextResponse.json(result);
+        } catch (validationError) {
+            if (validationError instanceof z.ZodError) {
+                return NextResponse.json(
+                    { error: 'Invalid request data', details: validationError.errors },
+                    { status: 400 }
+                );
+            }
+            throw validationError;
+        }
+    } catch (error) {
+        console.error('Grammar check API error:', error);
         return NextResponse.json(
-          { error: 'Invalid request data', details: validationError.errors },
-          { status: 400 }
+            { error: 'Internal server error', details: getErrorMessage(error) },
+            { status: 500 }
         );
-      }
-      throw validationError;
     }
-  } catch (error) {
-    console.error('Grammar check API error:', error);
-    return NextResponse.json(
-      { error: 'Internal server error', details: error.message },
-      { status: 500 }
-    );
-  }
+}
+
+
+function getErrorMessage(error: unknown): string {
+    if (error instanceof Error) return error.message;
+    return String(error);
 }
