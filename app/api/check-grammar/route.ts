@@ -5,6 +5,7 @@ import { checkGrammar } from '@/lib/langchain';
 import { connectToDatabase, UserModel } from '@/lib/mongodb'; // Gunakan connectToDatabase
 import { GrammarCheckRequestSchema } from '@/types';
 import { z } from 'zod';
+import { getErrorMessage } from '@/lib/error';
 
 export async function POST(request: NextRequest) {
     try {
@@ -51,10 +52,4 @@ export async function POST(request: NextRequest) {
             { status: 500 }
         );
     }
-}
-
-
-function getErrorMessage(error: unknown): string {
-    if (error instanceof Error) return error.message;
-    return String(error);
 }
