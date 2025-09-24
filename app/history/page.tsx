@@ -139,7 +139,6 @@ export default function HistoryPage() {
                                     <Button
                                         variant="outline"
                                         size="sm"
-                                        className="rounded-xl bg-bubblegum-mint/20 text-bubblegum-mint hover:bg-bubblegum-mint hover:text-white shadow-soft hover:shadow-md transition-all hover:animate-pop"
                                         onClick={() => copyText(item.correctedText)}
                                     >
                                         <Copy className="h-4 w-4 mr-2" />
@@ -150,7 +149,6 @@ export default function HistoryPage() {
                                             <Button
                                                 variant="destructive"
                                                 size="sm"
-                                                className="rounded-xl bg-bubblegum-pink text-white hover:bg-bubblegum-pink/80 shadow-soft hover:shadow-md transition-all hover:animate-pop"
                                                 disabled={deletingId === item._id}
                                             >
                                                 <Trash2 className="h-4 w-4 mr-2" />
@@ -165,10 +163,9 @@ export default function HistoryPage() {
                                                 </AlertDialogDescription>
                                             </AlertDialogHeader>
                                             <AlertDialogFooter>
-                                                <AlertDialogCancel className="rounded-xl text-bubblegum-lavender hover:bg-bubblegum-mint/20">Cancel</AlertDialogCancel>
+                                                <AlertDialogCancel>Cancel</AlertDialogCancel>
                                                 <AlertDialogAction
                                                     onClick={() => handleDelete(item._id)}
-                                                    className="rounded-xl bg-bubblegum-pink text-white hover:bg-bubblegum-pink/80"
                                                 >
                                                     Delete
                                                 </AlertDialogAction>
@@ -185,7 +182,7 @@ export default function HistoryPage() {
                                         <Button
                                             variant="outline"
                                             size="sm"
-                                            className="absolute top-2 right-2 rounded-xl bg-bubblegum-mint/20 text-bubblegum-mint hover:bg-bubblegum-mint hover:text-white shadow-soft hover:shadow-md transition-all hover:animate-pop"
+                                            className="absolute top-2 right-2"
                                             onClick={() => copyText(item.originalText)}
                                         >
                                             <Copy className="h-4 w-4 mr-2" />
@@ -254,9 +251,8 @@ export default function HistoryPage() {
             <div className="mt-8 text-center">
                 <Link
                     href="/"
-                    className="text-bubblegum-lavender hover:text-bubblegum-pink font-medium text-base sm:text-lg transition-all duration-200 hover:animate-pop"
                 >
-                    Back to Grammar Checker
+                    Kembali
                 </Link>
             </div>
         </div>

@@ -149,9 +149,9 @@ export function GrammarChecker() {
         return (
             <Card className="w-full max-w-3xl mx-auto shadow-soft rounded-xl bg-white dark:bg-bubblegum-lavender/10 border-bubblegum-lavender">
                 <CardHeader>
-                    <CardTitle className="text-2xl sm:text-3xl font-bold text-bubblegum-lavender">Grammar Checker</CardTitle>
+                    <CardTitle className="text-2xl sm:text-3xl font-bold text-bubblegum-lavender">Pemeriksa Tata Bahasa</CardTitle>
                     <CardDescription className="text-bubblegum-mint">
-                        Please sign in to use the grammar checker
+                        Silakan masuk untuk menggunakan pemeriksa tata bahasa
                     </CardDescription>
                 </CardHeader>
             </Card>
@@ -163,33 +163,33 @@ export function GrammarChecker() {
             {/* Input Section */}
             <Card className="shadow-soft rounded-xl bg-white dark:bg-bubblegum-lavender/10 border-bubblegum-lavender">
                 <CardHeader>
-                    <CardTitle className="text-2xl sm:text-3xl font-bold text-bubblegum-lavender">Enter Your Text</CardTitle>
+                    <CardTitle className="text-2xl sm:text-3xl font-bold text-bubblegum-lavender">Masukkan Teks Anda</CardTitle>
                     <CardDescription className="text-bubblegum-mint">
-                        Type or paste your text below. Grammar checking will start automatically.
+                        Ketik atau tempel teks Anda di bawah ini. Pemeriksaan tata bahasa akan dimulai secara otomatis.
                     </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                     <Textarea
                         value={text}
                         onChange={(e) => handleTextChange(e.target.value)}
-                        placeholder="Start typing or paste your text here..."
+                        placeholder="Mulai mengetik atau tempel teks Anda di sini..."
                         className="min-h-[150px] sm:min-h-[200px] resize-none rounded-lg bg-bubblegum-lavender/5 border-bubblegum-lavender text-bubblegum-lavender placeholder:text-bubblegum-mint/70 focus:ring-bubblegum-pink focus:ring-2 transition-all duration-200"
                     />
 
                     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                         <div className="flex flex-col sm:flex-row sm:items-center gap-4">
                             <div className="flex items-center gap-2">
-                                <span className="text-sm font-medium text-bubblegum-lavender">Writing Style:</span>
+                                <span className="text-sm font-medium text-bubblegum-lavender">Gaya Penulisan:</span>
                                 <Select value={style} onValueChange={handleStyleChange}>
                                     <SelectTrigger className="w-[150px] rounded-xl bg-bubblegum-mint border-bubblegum-lavender text-bubblegum-lavender shadow-soft hover:bg-bubblegum-mint/80 transition-all duration-200">
                                         <SelectValue />
                                     </SelectTrigger>
                                     <SelectContent className="rounded-xl bg-white dark:bg-bubblegum-lavender/10 border-bubblegum-lavender">
                                         <SelectItem value="formal" className="text-bubblegum-lavender hover:bg-bubblegum-mint/20">Formal</SelectItem>
-                                        <SelectItem value="casual" className="text-bubblegum-lavender hover:bg-bubblegum-mint/20">Casual</SelectItem>
+                                        <SelectItem value="casual" className="text-bubblegum-lavender hover:bg-bubblegum-mint/20">Santai</SelectItem>
                                         <SelectItem value="informal" className="text-bubblegum-lavender hover:bg-bubblegum-mint/20">Informal</SelectItem>
                                         <SelectItem value="gen-z" className="text-bubblegum-lavender hover:bg-bubblegum-mint/20">Gen-Z</SelectItem>
-                                        <SelectItem value="academic" className="text-bubblegum-lavender hover:bg-bubblegum-mint/20">Academic</SelectItem>
+                                        <SelectItem value="academic" className="text-bubblegum-lavender hover:bg-bubblegum-mint/20">Akademik</SelectItem>
                                     </SelectContent>
                                 </Select>
                             </div>
@@ -211,17 +211,17 @@ export function GrammarChecker() {
                                 {isSaving ? (
                                     <>
                                         <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
-                                        Saving...
+                                        Menyimpan...
                                     </>
                                 ) : saveSuccess ? (
                                     <>
                                         <CheckCircle2 className="h-4 w-4 mr-2 text-white" />
-                                        Saved!
+                                        Tersimpan!
                                     </>
                                 ) : (
                                     <>
                                         <Save className="h-4 w-4 mr-2" />
-                                        Save History
+                                        Simpan Riwayat
                                     </>
                                 )}
                             </Button>
@@ -229,13 +229,13 @@ export function GrammarChecker() {
                                 {loading && (
                                     <>
                                         <RefreshCw className="h-4 w-4 animate-spin text-bubblegum-pink" />
-                                        <span>Checking...</span>
+                                        <span>Sedang Memeriksa...</span>
                                     </>
                                 )}
                                 {!loading && text && (
                                     <>
                                         <CheckCircle2 className="h-4 w-4 text-bubblegum-mint" />
-                                        <span>{text.length} characters</span>
+                                        <span>{text.length} karakter</span>
                                     </>
                                 )}
                             </div>
@@ -258,9 +258,9 @@ export function GrammarChecker() {
             {(loading || suggestions.length > 0) && (
                 <Card className="shadow-soft rounded-xl bg-white dark:bg-bubblegum-lavender/10 border-bubblegum-lavender">
                     <CardHeader>
-                        <CardTitle className="text-2xl sm:text-3xl font-bold text-bubblegum-lavender">Grammar Suggestions</CardTitle>
+                        <CardTitle className="text-2xl sm:text-3xl font-bold text-bubblegum-lavender">Saran Tata Bahasa</CardTitle>
                         <CardDescription className="text-bubblegum-mint">
-                            Click on a suggestion to apply it to your text
+                            Klik pada saran untuk menerapkannya ke teks Anda
                         </CardDescription>
                     </CardHeader>
                     <CardContent>
@@ -297,9 +297,9 @@ export function GrammarChecker() {
                                                 <Button
                                                     size="sm"
                                                     variant="default"
-                                                    className="rounded-xl bg-bubblegum-pink text-white hover:bg-bubblegum-pink/80 hover:animate-pop"
+                                                    className="rounded-xl hover:animate-pop"
                                                 >
-                                                    Apply
+                                                    Terapkan
                                                 </Button>
                                             </div>
                                         </CardContent>
@@ -308,7 +308,7 @@ export function GrammarChecker() {
                             </div>
                         ) : (
                             <p className="text-center text-bubblegum-mint py-8 font-medium">
-                                No grammar issues found! Your text looks great ✨
+                                Tidak ada masalah tata bahasa yang ditemukan! Teks Anda terlihat bagus ✨
                             </p>
                         )}
                     </CardContent>
@@ -319,9 +319,9 @@ export function GrammarChecker() {
             {processedText && processedText !== text && (
                 <Card className="shadow-soft rounded-xl bg-white dark:bg-bubblegum-lavender/10 border-bubblegum-lavender">
                     <CardHeader>
-                        <CardTitle className="text-2xl sm:text-3xl font-bold text-bubblegum-lavender">Corrected Text</CardTitle>
+                        <CardTitle className="text-2xl sm:text-3xl font-bold text-bubblegum-lavender">Teks yang Telah Diperbaiki</CardTitle>
                         <CardDescription className="text-bubblegum-mint">
-                            The fully corrected version of your text
+                            Versi teks Anda yang telah diperbaiki sepenuhnya
                         </CardDescription>
                     </CardHeader>
                     <CardContent>
@@ -333,10 +333,10 @@ export function GrammarChecker() {
                                 onClick={copyProcessedText}
                                 size="sm"
                                 variant="default"
-                                className="absolute top-3 right-3 rounded-xl bg-bubblegum-pink text-white hover:bg-bubblegum-pink/80 shadow-soft hover:shadow-md transition-all duration-200 hover:animate-pop"
+                                className="absolute top-3 right-3 rounded-xl shadow-soft hover:shadow-md transition-all duration-200 hover:animate-pop"
                             >
                                 <Copy className="h-4 w-4 mr-2" />
-                                Copy
+                                Salin
                             </Button>
                         </div>
                     </CardContent>

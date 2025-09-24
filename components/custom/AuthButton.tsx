@@ -30,10 +30,9 @@ export function AuthButton() {
           onClick={() => signOut()}
           variant="outline"
           size="sm"
-          className="group rounded-xl border-bubblegum-lavender bg-bubblegum-pink/10 text-bubblegum-pink hover:bg-bubblegum-pink hover:text-white shadow-soft hover:shadow-md transition-all duration-300 ease-in-out hover:animate-pop"
         >
           <LogOut className="mr-2 h-4 w-4 group-hover:scale-110 transition-transform" />
-          Sign Out
+          Keluar
         </Button>
       </div>
     );

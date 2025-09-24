@@ -10,18 +10,18 @@ export default function Home() {
         <header className="flex flex-col md:flex-row md:justify-between md:items-center mb-8 sm:mb-10 md:mb-12 bg-white dark:bg-bubblegum-lavender/10 shadow-soft rounded-xl p-4 sm:p-6">
           <div className="mb-4 md:mb-0">
             <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-bubblegum-lavender">
-              LexiGuard
+              Lexi Guard
             </h1>
             <p className="text-bubblegum-mint mt-2 text-sm sm:text-base">
-              Your AI-powered writing assistant ✨
+              Pemeriksa Tata Bahasa Inggris yang didukung AI ✨
             </p>
           </div>
           <div className="flex items-center gap-3 sm:gap-4">
             <Link
               href="/history"
-              className="rounded-xl bg-bubblegum-lavender/20 border-bubblegum-lavender animate-pulse shadow-soft"
+              className="rounded-xl px-3 py-2 border-bubblegum-lavender animate-pulse shadow-soft"
             >
-              History
+              Riwayat
             </Link>
             <AuthButton />
           </div>
