@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
-import { authOptions } from '../auth/[...nextauth]/route';
+import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import { checkGrammar } from '@/lib/langchain';
-import { connectToDatabase, UserModel } from '@/lib/mongodb';
+import { connectToDatabase, UserModel } from '@/lib/mongodb'; // Gunakan connectToDatabase
 import { GrammarCheckRequestSchema } from '@/types';
 import { z } from 'zod';
 
@@ -47,7 +47,7 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error('Grammar check API error:', error);
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: 'Internal server error', details: error.message },
       { status: 500 }
     );
   }

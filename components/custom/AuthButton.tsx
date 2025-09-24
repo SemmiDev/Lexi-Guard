@@ -9,8 +9,12 @@ export function AuthButton() {
 
   if (status === 'loading') {
     return (
-      <Button disabled variant="outline">
-        <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+      <Button
+        disabled
+        variant="outline"
+        className="rounded-xl bg-bubblegum-lavender/20 border-bubblegum-lavender animate-pulse shadow-soft"
+      >
+        <div className="h-5 w-5 animate-spin rounded-full border-2 border-bubblegum-pink border-t-transparent" />
       </Button>
     );
   }
@@ -18,16 +22,17 @@ export function AuthButton() {
   if (session) {
     return (
       <div className="flex items-center gap-4">
-        <div className="flex items-center gap-2">
-          <User className="h-4 w-4" />
+        <div className="flex items-center gap-2 rounded-lg bg-bubblegum-mint/20 px-3 py-2 text-bubblegum-lavender shadow-soft">
+          <User className="h-5 w-5 text-bubblegum-pink" />
           <span className="text-sm font-medium">{session.user?.name}</span>
         </div>
         <Button
           onClick={() => signOut()}
           variant="outline"
           size="sm"
+          className="group rounded-xl border-bubblegum-lavender bg-bubblegum-pink/10 text-bubblegum-pink hover:bg-bubblegum-pink hover:text-white shadow-soft hover:shadow-md transition-all duration-300 ease-in-out hover:animate-pop"
         >
-          <LogOut className="mr-2 h-4 w-4" />
+          <LogOut className="mr-2 h-4 w-4 group-hover:scale-110 transition-transform" />
           Sign Out
         </Button>
       </div>
@@ -39,9 +44,9 @@ export function AuthButton() {
       onClick={() => signIn('google')}
       variant="default"
       size="lg"
-      className="w-full sm:w-auto"
+      className="w-full sm:w-auto rounded-xl bg-bubblegum-pink text-white hover:bg-bubblegum-mint hover:text-bubblegum-lavender shadow-soft hover:shadow-md transition-all duration-300 ease-in-out hover:animate-pop"
     >
-      <LogIn className="mr-2 h-4 w-4" />
+      <LogIn className="mr-2 h-5 w-5" />
       Sign in with Google
     </Button>
   );
