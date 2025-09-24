@@ -2,10 +2,9 @@ import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import History from '@/models/History';
-import { connectToDatabase } from '@/lib/mongodb'; // Gunakan connectToDatabase
+import { connectToDatabase } from '@/lib/mongodb';
 import { z } from 'zod';
 
-// Skema validasi untuk POST request
 const HistorySchema = z.object({
     originalText: z.string().min(1, 'Original text is required'),
     correctedText: z.string().min(1, 'Corrected text is required'),
@@ -26,7 +25,7 @@ export async function POST(req: Request) {
     }
 
     try {
-        await connectToDatabase(); // Gunakan connectToDatabase
+        await connectToDatabase();
 
         const body = await req.json();
         const validatedData = HistorySchema.parse(body);
@@ -48,18 +47,11 @@ export async function POST(req: Request) {
                 { status: 400 }
             );
         }
-
-        if (error instanceof Error) {
-            console.error("Error saving history:", error);
-            return NextResponse.json(
-                { message: "Error saving history", details: error.message },
-                { status: 500 }
-            );
-        }
-
-        // fallback jika error bukan instance Error
-        console.error("Unknown error:", error);
-        return NextResponse.json({ message: "Unexpected error" }, { status: 500 });
+        console.error("Error saving history:", error);
+        return NextResponse.json(
+            { message: "Error saving history", details: error instanceof Error ? error.message : "Unknown error" },
+            { status: 500 }
+        );
     }
 }
 
@@ -71,39 +63,35 @@ export async function GET(req: Request) {
     }
 
     try {
-        await connectToDatabase(); // Gunakan connectToDatabase
+        await connectToDatabase();
 
         const { searchParams } = new URL(req.url);
-        const page = parseInt(searchParams.get('page') || '1');
-        const limit = 10; // Batasi 10 item per halaman
+        const page = Math.max(1, parseInt(searchParams.get('page') || '1'));
+        const limit = Math.max(1, Math.min(100, parseInt(searchParams.get('limit') || '10'))); // Limit max items to prevent abuse
 
+        const skip = (page - 1) * limit;
         const history = await History.find({ user: session.user.id })
             .sort({ createdAt: -1 })
-            .skip((page - 1) * limit)
-            .limit(limit);
+            .skip(skip)
+            .limit(limit)
+            .lean();
 
         const total = await History.countDocuments({ user: session.user.id });
 
-        return NextResponse.json({ history, total, page, hasMore: page * limit < total }, { status: 200 });
+        return NextResponse.json({
+            history,
+            total,
+            page,
+            limit,
+            totalPages: Math.ceil(total / limit),
+            hasMore: skip + history.length < total
+        }, { status: 200 });
     } catch (error) {
-        if (error instanceof z.ZodError) {
-            return NextResponse.json(
-                { message: "Invalid request data", details: error.errors },
-                { status: 400 }
-            );
-        }
-
-        if (error instanceof Error) {
-            console.error("Error saving history:", error);
-            return NextResponse.json(
-                { message: "Error saving history", details: error.message },
-                { status: 500 }
-            );
-        }
-
-        // fallback jika error bukan instance Error
-        console.error("Unknown error:", error);
-        return NextResponse.json({ message: "Unexpected error" }, { status: 500 });
+        console.error("Error fetching history:", error);
+        return NextResponse.json(
+            { message: "Error fetching history", details: error instanceof Error ? error.message : "Unknown error" },
+            { status: 500 }
+        );
     }
 }
 
@@ -115,7 +103,7 @@ export async function DELETE(req: Request) {
     }
 
     try {
-        await connectToDatabase(); // Gunakan connectToDatabase
+        await connectToDatabase();
 
         const { id } = await req.json();
 
@@ -131,23 +119,10 @@ export async function DELETE(req: Request) {
 
         return NextResponse.json({ message: 'History item deleted successfully' }, { status: 200 });
     } catch (error) {
-        if (error instanceof z.ZodError) {
-            return NextResponse.json(
-                { message: "Invalid request data", details: error.errors },
-                { status: 400 }
-            );
-        }
-
-        if (error instanceof Error) {
-            console.error("Error saving history:", error);
-            return NextResponse.json(
-                { message: "Error saving history", details: error.message },
-                { status: 500 }
-            );
-        }
-
-        // fallback jika error bukan instance Error
-        console.error("Unknown error:", error);
-        return NextResponse.json({ message: "Unexpected error" }, { status: 500 });
+        console.error("Error deleting history:", error);
+        return NextResponse.json(
+            { message: "Error deleting history", details: error instanceof Error ? error.message : "Unknown error" },
+            { status: 500 }
+        );
     }
 }

@@ -1,5 +1,6 @@
 'use client';
 
+import ReactMarkdown from "react-markdown";
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useSession } from 'next-auth/react';
 import { Textarea } from '@/components/ui/textarea';
@@ -8,7 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { CheckCircle2, AlertCircle, Copy, RefreshCw, Save } from 'lucide-react';
+import { CheckCircle2, AlertCircle, Copy, RefreshCw, Save, Volume2 } from 'lucide-react';
 import type { WritingStyleType, GrammarSuggestion, GrammarCheckResponse } from '@/types';
 
 const DEBOUNCE_DELAY = 500;
@@ -25,7 +26,6 @@ export function GrammarChecker() {
     const [isSaving, setIsSaving] = useState(false);
     const [saveSuccess, setSaveSuccess] = useState(false);
     const debounceTimer = useRef<NodeJS.Timeout | null>(null);
-
 
     // Debounced grammar check function
     const checkGrammar = useCallback(async (inputText: string, selectedStyle: WritingStyleType) => {
@@ -92,9 +92,7 @@ export function GrammarChecker() {
 
     // Apply suggestion
     const applySuggestion = useCallback((suggestion: GrammarSuggestion) => {
-        const newText = text.substring(0, suggestion.startIndex) +
-            suggestion.suggestion +
-            text.substring(suggestion.endIndex);
+        const newText = suggestion.suggestion;
         setText(newText);
         handleTextChange(newText);
     }, [text, handleTextChange]);
@@ -103,6 +101,58 @@ export function GrammarChecker() {
     const copyProcessedText = useCallback(() => {
         navigator.clipboard.writeText(processedText);
     }, [processedText]);
+
+    // Text-to-speech function
+    const speakProcessedText = useCallback(() => {
+        if (!processedText) return;
+
+        // Hentikan dulu speech yang sedang jalan biar tidak numpuk
+        if (window.speechSynthesis.speaking) {
+            window.speechSynthesis.cancel();
+        }
+
+        const utterance = new SpeechSynthesisUtterance(processedText);
+
+        // 🎯 Bahasa & suara (fixed ke Inggris UK)
+        utterance.lang = "en-GB";
+        const voices = window.speechSynthesis.getVoices();
+
+        // pilih voice English UK kalau ada, fallback ke English lain, lalu default
+        utterance.voice =
+        voices.find(v => v.lang === "en-GB" && v.name.toLowerCase().includes("female")) ||
+        voices.find(v => v.lang === "en-GB") || // fallback ke UK voice lain
+        voices.find(v => v.lang.startsWith("en")) || // fallback ke English lain
+        voices.find(v => v.default) ||
+        null;
+
+        // 🎛️ Kontrol kualitas suara
+        utterance.rate = 0.9;   // kecepatan (0.1 - 10)
+        utterance.pitch = 1.0;  // nada suara (0 - 2)
+        utterance.volume = 1;   // volume (0 - 1)
+
+        // 🧩 Event listener untuk interaktif
+        utterance.onstart = () => {
+            console.log("🔊 Speaking...");
+        };
+        utterance.onend = () => {
+            console.log("✅ Finished speaking.");
+        };
+        utterance.onerror = (e) => {
+            console.error("⚠️ Speech synthesis error:", e);
+        };
+
+        // Highlight kata yang sedang diucapkan (opsional)
+        utterance.onboundary = (event) => {
+            if (event.name === "word") {
+                console.log(
+                    `📍 Currently speaking at index ${event.charIndex} (type: ${event.name})`
+                );
+            }
+        };
+
+        window.speechSynthesis.speak(utterance);
+    }, [processedText]);
+
 
     // Save history
     const saveHistory = useCallback(async () => {
@@ -215,12 +265,12 @@ export function GrammarChecker() {
                                     </>
                                 ) : saveSuccess ? (
                                     <>
-                                        <CheckCircle2 className="h-4 w-4 mr-2 text-white" />
+                                        <CheckCircle2 />
                                         Tersimpan!
                                     </>
                                 ) : (
                                     <>
-                                        <Save className="h-4 w-4 mr-2" />
+                                        <Save />
                                         Simpan Riwayat
                                     </>
                                 )}
@@ -258,9 +308,9 @@ export function GrammarChecker() {
             {(loading || suggestions.length > 0) && (
                 <Card className="shadow-soft rounded-xl bg-white dark:bg-bubblegum-lavender/10 border-bubblegum-lavender">
                     <CardHeader>
-                        <CardTitle className="text-2xl sm:text-3xl font-bold text-bubblegum-lavender">Saran Tata Bahasa</CardTitle>
+                        <CardTitle className="text-2xl sm:text-3xl font-bold text-bubblegum-lavender">Penjelasan Tata Bahasa</CardTitle>
                         <CardDescription className="text-bubblegum-mint">
-                            Klik pada saran untuk menerapkannya ke teks Anda
+                            Berikut penjelasan tata bahasa nya.
                         </CardDescription>
                     </CardHeader>
                     <CardContent>
@@ -282,25 +332,39 @@ export function GrammarChecker() {
                                             <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
                                                 <div className="flex-1 space-y-2">
                                                     <div className="flex items-center gap-2 flex-wrap overflow-x-auto pb-2">
-                                                        <Badge variant="outline" className="text-bubblegum-pink border-bubblegum-pink rounded-full font-medium">
+                                                        <Badge
+                                                            variant="outline"
+                                                            className="text-bubblegum-pink border-bubblegum-pink rounded-full font-medium"
+                                                        >
                                                             {suggestion.original}
                                                         </Badge>
                                                         <span className="text-sm text-bubblegum-lavender">→</span>
-                                                        <Badge variant="outline" className="text-bubblegum-mint border-bubblegum-mint rounded-full font-medium">
-                                                            {suggestion.suggestion}
+                                                        <Badge
+                                                            variant="outline"
+                                                            className="text-bubblegum-mint border-bubblegum-mint rounded-full font-medium"
+                                                        >
+                                                            <div className="prose prose-sm text-bubblegum-mint">
+                                                                <ReactMarkdown>
+                                                                    {suggestion.suggestion}
+                                                                </ReactMarkdown>
+                                                            </div>
                                                         </Badge>
                                                     </div>
-                                                    <p className="text-sm text-bubblegum-mint">
-                                                        {suggestion.explanation}
-                                                    </p>
+
+                                                    <div className="prose prose-sm text-bubblegum-mint">
+                                                        <ReactMarkdown>
+                                                            {suggestion.explanation}
+                                                        </ReactMarkdown>
+                                                    </div>
                                                 </div>
-                                                <Button
+
+                                                {/* <Button
                                                     size="sm"
                                                     variant="default"
                                                     className="rounded-xl hover:animate-pop"
                                                 >
                                                     Terapkan
-                                                </Button>
+                                                </Button> */}
                                             </div>
                                         </CardContent>
                                     </Card>
@@ -329,15 +393,25 @@ export function GrammarChecker() {
                             <div className="p-4 bg-bubblegum-lavender/5 rounded-lg shadow-inner">
                                 <p className="whitespace-pre-wrap text-bubblegum-lavender">{processedText}</p>
                             </div>
-                            <Button
-                                onClick={copyProcessedText}
-                                size="sm"
-                                variant="default"
-                                className="absolute top-3 right-3 rounded-xl shadow-soft hover:shadow-md transition-all duration-200 hover:animate-pop"
-                            >
-                                <Copy className="h-4 w-4 mr-2" />
-                                Salin
-                            </Button>
+                            <div className="absolute top-3 right-3 flex gap-2">
+                                <Button
+                                    onClick={speakProcessedText}
+                                    size="sm"
+                                    variant="secondary"
+                                    className="rounded-xl shadow-soft hover:shadow-md transition-all duration-200 hover:animate-pop"
+                                    disabled={!processedText}
+                                >
+                                    <Volume2 />
+                                </Button>
+                                <Button
+                                    onClick={copyProcessedText}
+                                    size="sm"
+                                    variant="default"
+                                    className="rounded-xl shadow-soft hover:shadow-md transition-all duration-200 hover:animate-pop"
+                                >
+                                    <Copy />
+                                </Button>
+                            </div>
                         </div>
                     </CardContent>
                 </Card>

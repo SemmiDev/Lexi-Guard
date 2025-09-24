@@ -1,17 +1,18 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useSession } from 'next-auth/react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
-import { AlertCircle, Trash2, Copy, CheckCircle2 } from 'lucide-react';
+import { AlertCircle, Trash2, Copy, Home, MoreVerticalIcon, ArrowDown, Volume2 } from 'lucide-react';
 import Link from 'next/link';
 import { toast } from 'sonner';
 import { getErrorMessage } from '@/lib/error';
+import ReactMarkdown from 'react-markdown';
 
 interface HistoryItem {
     _id: string;
@@ -21,38 +22,59 @@ interface HistoryItem {
     createdAt: string;
 }
 
+interface HistoryResponse {
+    history: HistoryItem[];
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+    hasMore: boolean;
+}
+
 export default function HistoryPage() {
-    const { data: session } = useSession();
+    const { data: session, status } = useSession();
     const [history, setHistory] = useState<HistoryItem[]>([]);
-    const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState(false);
     const [deletingId, setDeletingId] = useState<string | null>(null);
     const [error, setError] = useState<string | null>(null);
     const [page, setPage] = useState(1);
     const [hasMore, setHasMore] = useState(true);
+    const [totalPages, setTotalPages] = useState(1);
 
-    const fetchHistory = async (pageNum: number) => {
-        if (!session) return;
+    const fetchHistory = useCallback(async (pageNum: number, reset = false) => {
+        if (!session || loading) return;
 
         try {
             setLoading(true);
-            const response = await fetch(`/api/history?page=${pageNum}`);
+            const response = await fetch(`/api/history?page=${pageNum}&limit=25`, {
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            });
+
             if (!response.ok) {
                 throw new Error('Failed to fetch history');
             }
-            const data = await response.json();
-            setHistory((prev) => (pageNum === 1 ? data.history : [...prev, ...data.history]));
+
+            const data: HistoryResponse = await response.json();
+
+            setHistory((prev) => (reset ? data.history : [...prev, ...data.history]));
             setHasMore(data.hasMore);
+            setTotalPages(data.totalPages);
+            setPage(data.page);
         } catch (err) {
-            setError(getErrorMessage(error));
+            setError(getErrorMessage(err));
             console.error('Error fetching history:', err);
         } finally {
             setLoading(false);
         }
-    };
+    }, [session, status]);
 
     useEffect(() => {
-        fetchHistory(1);
-    }, [session]);
+        if (status === 'authenticated' && session) {
+            fetchHistory(1, true);
+        }
+    }, [status, session, fetchHistory]);
 
     const handleDelete = async (id: string) => {
         setDeletingId(id);
@@ -67,12 +89,18 @@ export default function HistoryPage() {
                 throw new Error('Failed to delete history item');
             }
 
-            setHistory(history.filter((item) => item._id !== id));
+            setHistory((prev) => prev.filter((item) => item._id !== id));
             toast.success('History item deleted successfully', {
                 style: { background: 'oklch(0.85 0.15 310)', color: 'white', border: '1px solid oklch(0.90 0.05 300)' },
             });
+
+            // Refetch first page if the current page becomes empty
+            if (history.length === 1 && page > 1) {
+                setPage(1);
+                fetchHistory(1, true);
+            }
         } catch (err) {
-            setError(getErrorMessage(error));
+            setError(getErrorMessage(err));
             console.error('Error deleting history:', err);
         } finally {
             setDeletingId(null);
@@ -85,6 +113,74 @@ export default function HistoryPage() {
             style: { background: 'oklch(0.92 0.08 180)', color: 'oklch(0.35 0.05 300)', border: '1px solid oklch(0.90 0.05 300)' },
         });
     };
+
+    const speakText = (text: string) => {
+        if (!text) return;
+
+        // Stop dulu biar tidak numpuk
+        if (window.speechSynthesis.speaking) {
+            window.speechSynthesis.cancel();
+        }
+
+        const utterance = new SpeechSynthesisUtterance(text);
+
+        // 🎯 Bahasa & voice (fixed ke English UK)
+        utterance.lang = "en-GB";
+        const voices = window.speechSynthesis.getVoices();
+
+        // Pilih voice English UK kalau ada, fallback ke English lain, lalu default
+      utterance.voice =
+        voices.find(v => v.lang === "en-GB" && v.name.toLowerCase().includes("female")) ||
+        voices.find(v => v.lang === "en-GB") || // fallback ke UK voice lain
+        voices.find(v => v.lang.startsWith("en")) || // fallback ke English lain
+        voices.find(v => v.default) ||
+        null;
+
+        // 🎛️ Kontrol kualitas suara
+        utterance.rate = 0.9;   // speed (0.1 - 10)
+        utterance.pitch = 1.0;  // pitch (0 - 2)
+        utterance.volume = 1;   // volume (0 - 1)
+
+        // 🧩 Event listener for debugging / interactivity
+        utterance.onstart = () => {
+            console.log("🔊 Speaking (English UK)...");
+        };
+        utterance.onend = () => {
+            console.log("✅ Finished speaking.");
+        };
+        utterance.onerror = (e) => {
+            console.error("⚠️ Speech synthesis error:", e);
+        };
+
+        // Highlight current word (optional)
+        utterance.onboundary = (event) => {
+            if (event.name === "word") {
+                console.log(
+                    `📍 Speaking at index ${event.charIndex} (type: ${event.name})`
+                );
+            }
+        };
+
+        window.speechSynthesis.speak(utterance);
+    };
+
+    const handleLoadMore = () => {
+        if (hasMore && !loading) {
+            fetchHistory(page + 1);
+        }
+    };
+
+    if (status === 'loading') {
+        return (
+            <div className="container mx-auto px-4 sm:px-6 md:px-8 py-6 sm:py-8 md:py-12 max-w-5xl">
+                <div className="space-y-6">
+                    {[1, 2, 3].map((i) => (
+                        <Skeleton key={i} className="h-32 w-full rounded-xl bg-bubblegum-lavender/10" />
+                    ))}
+                </div>
+            </div>
+        );
+    }
 
     if (!session) {
         return (
@@ -105,11 +201,17 @@ export default function HistoryPage() {
         <div className="container mx-auto px-4 sm:px-6 md:px-8 py-6 sm:py-8 md:py-12 max-w-5xl">
             <header className="mb-8 sm:mb-10 md:mb-12">
                 <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-bubblegum-lavender">
-                    Your History
+                    Riwayat
                 </h1>
                 <p className="text-bubblegum-mint mt-2 text-sm sm:text-base">
-                    Here are your saved grammar checks ✨
+                    Berikut riwayat yang kamu simpan ✨
                 </p>
+                <Button asChild variant="default" className="mt-3 rounded-xl">
+                    <Link href="/">
+                        <Home />
+                        Kembali
+                    </Link>
+                </Button>
             </header>
 
             {error && (
@@ -121,7 +223,7 @@ export default function HistoryPage() {
                 </Card>
             )}
 
-            {loading && page === 1 ? (
+            {loading && history.length === 0 ? (
                 <div className="space-y-6">
                     {[1, 2, 3].map((i) => (
                         <Skeleton key={i} className="h-32 w-full rounded-xl bg-bubblegum-lavender/10" />
@@ -133,16 +235,33 @@ export default function HistoryPage() {
                         <Card key={item._id} className="shadow-soft rounded-xl bg-white dark:bg-bubblegum-lavender/10 border-bubblegum-lavender">
                             <CardHeader className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                                 <CardTitle className="text-xl sm:text-2xl font-bold text-bubblegum-lavender">
-                                    {new Date(item.createdAt).toLocaleString()}
+                                    {new Date(item.createdAt).toLocaleString('id-ID', {
+                                        weekday: 'long',
+                                        year: 'numeric',
+                                        month: 'long',
+                                        day: 'numeric',
+                                        hour: '2-digit',
+                                        minute: '2-digit',
+                                    })}
                                 </CardTitle>
-                                <div className="flex items-center gap-3">
+                                <div className="flex items-center gap-2">
                                     <Button
-                                        variant="outline"
+                                        variant="secondary"
                                         size="sm"
                                         onClick={() => copyText(item.correctedText)}
+                                        className="rounded-xl hover:animate-pop"
                                     >
-                                        <Copy className="h-4 w-4 mr-2" />
-                                        Copy Corrected
+                                        <Copy />
+                                        Salin
+                                    </Button>
+                                    <Button
+                                        variant="secondary"
+                                        size="sm"
+                                        onClick={() => speakText(item.correctedText)}
+                                        disabled={!item.correctedText}
+                                        className="rounded-xl hover:animate-pop"
+                                    >
+                                        <Volume2 />
                                     </Button>
                                     <AlertDialog>
                                         <AlertDialogTrigger asChild>
@@ -150,24 +269,23 @@ export default function HistoryPage() {
                                                 variant="destructive"
                                                 size="sm"
                                                 disabled={deletingId === item._id}
+                                                className="rounded-xl"
                                             >
-                                                <Trash2 className="h-4 w-4 mr-2" />
-                                                Delete
+                                                <Trash2 />
+                                                Hapus
                                             </Button>
                                         </AlertDialogTrigger>
                                         <AlertDialogContent className="rounded-xl bg-white dark:bg-bubblegum-lavender/10 border-bubblegum-lavender">
                                             <AlertDialogHeader>
-                                                <AlertDialogTitle className="text-bubblegum-lavender">Are you sure?</AlertDialogTitle>
+                                                <AlertDialogTitle className="text-bubblegum-lavender">Kamu yakin?</AlertDialogTitle>
                                                 <AlertDialogDescription className="text-bubblegum-mint">
-                                                    This action cannot be undone. This will permanently delete this history item.
+                                                    Data ini akan dihapus permanen
                                                 </AlertDialogDescription>
                                             </AlertDialogHeader>
                                             <AlertDialogFooter>
                                                 <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                                <AlertDialogAction
-                                                    onClick={() => handleDelete(item._id)}
-                                                >
-                                                    Delete
+                                                <AlertDialogAction onClick={() => handleDelete(item._id)}>
+                                                    Hapus
                                                 </AlertDialogAction>
                                             </AlertDialogFooter>
                                         </AlertDialogContent>
@@ -176,29 +294,14 @@ export default function HistoryPage() {
                             </CardHeader>
                             <CardContent className="space-y-4">
                                 <div>
-                                    <h3 className="font-semibold mb-2 text-bubblegum-lavender">Original Text</h3>
-                                    <div className="relative">
-                                        <p className="text-bubblegum-mint whitespace-pre-wrap">{item.originalText}</p>
-                                        <Button
-                                            variant="outline"
-                                            size="sm"
-                                            className="absolute top-2 right-2"
-                                            onClick={() => copyText(item.originalText)}
-                                        >
-                                            <Copy className="h-4 w-4 mr-2" />
-                                            Copy
-                                        </Button>
-                                    </div>
-                                </div>
-                                <div>
-                                    <h3 className="font-semibold mb-2 text-bubblegum-lavender">Corrected Text</h3>
+                                    <h3 className="font-semibold mb-2 text-bubblegum-lavender">Teks yang telah di koreksi</h3>
                                     <p className="text-bubblegum-lavender whitespace-pre-wrap">{item.correctedText}</p>
                                 </div>
                                 {item.suggestions && item.suggestions.length > 0 && (
                                     <Accordion type="single" collapsible className="w-full">
                                         <AccordionItem value="suggestions">
                                             <AccordionTrigger className="text-bubblegum-lavender hover:text-bubblegum-pink">
-                                                Suggestions ({item.suggestions.length})
+                                                Saran Perbaikan ({item.suggestions.length})
                                             </AccordionTrigger>
                                             <AccordionContent>
                                                 <div className="space-y-3">
@@ -209,11 +312,13 @@ export default function HistoryPage() {
                                                                     {sug.original}
                                                                 </Badge>
                                                                 <span className="text-bubblegum-lavender">→</span>
-                                                                <Badge className="rounded-full bg-bubblegum-mint/20 text-bubblegum-mint border-bubblegum-mint">
-                                                                    {sug.suggestion}
-                                                                </Badge>
+                                                                <div className="prose prose-sm text-bubblegum-mint">
+                                                                    <ReactMarkdown>{sug.suggestion}</ReactMarkdown>
+                                                                </div>
                                                             </div>
-                                                            <p className="text-sm text-bubblegum-mint">{sug.explanation}</p>
+                                                            <div className="mt-3 prose prose-sm text-bubblegum-mint">
+                                                                <ReactMarkdown>{sug.explanation}</ReactMarkdown>
+                                                            </div>
                                                         </div>
                                                     ))}
                                                 </div>
@@ -225,36 +330,29 @@ export default function HistoryPage() {
                         </Card>
                     ))}
                     {hasMore && (
-                        <div className="text-center mt-6">
+                        <div className="text-center mt-6 flex items-center justify-center gap-4">
+                            <p className="text-bubblegum-mint">
+                                Halaman {page} dari {totalPages}
+                            </p>
                             <Button
-                                onClick={() => {
-                                    setPage((prev) => prev + 1);
-                                    fetchHistory(page + 1);
-                                }}
-                                className="rounded-xl bg-bubblegum-pink text-white hover:bg-bubblegum-pink/80 shadow-soft hover:shadow-md transition-all hover:animate-pop"
-                                disabled={loading}
+                                variant={'secondary'}
+                                onClick={handleLoadMore}
+                                disabled={loading || !hasMore}
                             >
                                 {loading ? (
                                     <div className="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent mr-2" />
                                 ) : null}
-                                Load More
+                                <ArrowDown />
+                                Lebih Banyak
                             </Button>
                         </div>
                     )}
                 </div>
             ) : (
                 <p className="text-center text-bubblegum-mint py-8 font-medium text-lg sm:text-xl">
-                    You have no saved history yet. ✨
+                    Belum ada riwayat. ✨
                 </p>
             )}
-
-            <div className="mt-8 text-center">
-                <Link
-                    href="/"
-                >
-                    Kembali
-                </Link>
-            </div>
         </div>
     );
 }

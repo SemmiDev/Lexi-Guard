@@ -28,10 +28,10 @@ export function AuthButton() {
         </div>
         <Button
           onClick={() => signOut()}
-          variant="outline"
+          variant="destructive"
           size="sm"
         >
-          <LogOut className="mr-2 h-4 w-4 group-hover:scale-110 transition-transform" />
+          <LogOut className="group-hover:scale-110 transition-transform" />
           Keluar
         </Button>
       </div>
@@ -46,7 +46,7 @@ export function AuthButton() {
       className="w-full sm:w-auto rounded-xl bg-bubblegum-pink text-white hover:bg-bubblegum-mint hover:text-bubblegum-lavender shadow-soft hover:shadow-md transition-all duration-300 ease-in-out hover:animate-pop"
     >
       <LogIn className="mr-2 h-5 w-5" />
-      Sign in with Google
+      Masuk dengan Google
     </Button>
   );
 }

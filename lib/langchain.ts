@@ -20,10 +20,16 @@ export async function checkGrammar(request: GrammarCheckRequest): Promise<Gramma
 
     // Buat prompt pengguna untuk memeriksa tata bahasa, ejaan, dan gaya
     const userPrompt = `
-      Periksa teks berikut untuk masalah tata bahasa, ejaan, dan gaya penulisan dalam bahasa Inggris.
-      Berikan hingga 5 saran perbaikan paling penting.
-      Pastikan field "explanation" dalam respons berisi penjelasan dalam bahasa Indonesia.
-      Field "original", "suggestion", dan "processedText" harus tetap dalam bahasa Inggris.
+      - Periksa teks berikut untuk masalah tata bahasa, ejaan, dan gaya penulisan dalam bahasa Inggris.
+      - Berikan hingga 5 saran perbaikan paling penting.
+      - Pastikan field "explanation" dalam respons berisi penjelasan rinci seperti
+        * kenapa perbaikan itu perlu
+        * aturan grammar apa yang digunakan (contoh: subject-verb agreement, penggunaan to be, kata kerja bentuk V1/V2/V3, penggunaan artikel, dll.)
+        * tense apa yang dipakai (misalnya Present Simple, Past Continuous, dsb.)
+        * kenapa tense itu dipilih pada konteks kalimat
+        * alasan memilih kata atau struktur tertentu dibanding alternatif lain
+      dalam bahasa Indonesia, tiap poin suggestion buat dalam bullets supaya mudah dibaca.
+      - Field "original", "suggestion", dan "processedText" harus tetap dalam bahasa Inggris.
 
       Teks yang diperiksa:
       "${request.text}"
