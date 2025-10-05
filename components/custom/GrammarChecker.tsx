@@ -382,39 +382,39 @@ export function GrammarChecker() {
             {/* Processed Text Section */}
             {processedText && processedText !== text && (
                 <Card className="shadow-soft rounded-xl bg-white dark:bg-bubblegum-lavender/10 border-bubblegum-lavender">
-                    <CardHeader>
-                        <CardTitle className="text-2xl sm:text-3xl font-bold text-bubblegum-lavender">Teks yang Telah Diperbaiki</CardTitle>
-                        <CardDescription className="text-bubblegum-mint">
-                            Versi teks Anda yang telah diperbaiki sepenuhnya
-                        </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="relative">
-                            <div className="p-4 bg-bubblegum-lavender/5 rounded-lg shadow-inner">
-                                <p className="whitespace-pre-wrap text-bubblegum-lavender">{processedText}</p>
-                            </div>
-                            <div className="absolute top-3 right-3 flex gap-2">
-                                <Button
-                                    onClick={speakProcessedText}
-                                    size="sm"
-                                    variant="secondary"
-                                    className="rounded-xl shadow-soft hover:shadow-md transition-all duration-200 hover:animate-pop"
-                                    disabled={!processedText}
-                                >
-                                    <Volume2 />
-                                </Button>
-                                <Button
-                                    onClick={copyProcessedText}
-                                    size="sm"
-                                    variant="default"
-                                    className="rounded-xl shadow-soft hover:shadow-md transition-all duration-200 hover:animate-pop"
-                                >
-                                    <Copy />
-                                </Button>
-                            </div>
-                        </div>
-                    </CardContent>
-                </Card>
+    <CardHeader>
+        <CardTitle className="text-2xl sm:text-3xl font-bold text-bubblegum-lavender">Teks yang Telah Diperbaiki</CardTitle>
+        <CardDescription className="text-bubblegum-mint">
+            Versi teks Anda yang telah diperbaiki sepenuhnya
+        </CardDescription>
+    </CardHeader>
+    <CardContent>
+        <div className="relative">
+            <div className="p-4 bg-bubblegum-lavender/5 rounded-lg shadow-inner">
+                <p className="whitespace-pre-wrap text-bubblegum-lavender">{processedText}</p>
+            </div>
+            <div className="absolute bottom-3 right-3 flex gap-2">
+                <Button
+                    onClick={speakProcessedText}
+                    size="sm"
+                    variant="secondary"
+                    className="rounded-xl shadow-soft hover:shadow-md transition-all duration-200 hover:animate-pop"
+                    disabled={!processedText}
+                >
+                    <Volume2 />
+                </Button>
+                <Button
+                    onClick={copyProcessedText}
+                    size="sm"
+                    variant="default"
+                    className="rounded-xl shadow-soft hover:shadow-md transition-all duration-200 hover:animate-pop"
+                >
+                    <Copy />
+                </Button>
+            </div>
+        </div>
+    </CardContent>
+</Card>
             )}
         </div>
     );

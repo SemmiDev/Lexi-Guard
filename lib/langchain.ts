@@ -46,7 +46,7 @@ export async function checkGrammar(request: GrammarCheckRequest): Promise<Gramma
           }
         ],
         "detectedLanguage": "${detectedLanguage}",
-        "processedText": "versi teks yang telah diperbaiki sepenuhnya dalam bahasa Inggris"
+        "processedText": "versi teks yang telah diperbaiki sepenuhnya dalam bahasa Inggris dan bahasa Indonesia, contoh Good Morning 🇮🇩 Selamat Pagi"
       }
     `;
 
